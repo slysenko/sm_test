@@ -4,9 +4,28 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-const app = createApp(App)
+import VueVirtualScroller from 'vue-virtual-scroller'
 
-app.use(createPinia())
-app.use(router)
+import './style.css'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
-app.mount('#app')
+async function enableMocking() {
+  if (import.meta.env.DEV) {
+    const { worker } = await import('./mocks/browser')
+
+    return worker.start({
+      onUnhandledRequest: 'bypass',
+      quiet: false,
+    })
+  }
+}
+
+enableMocking().then(() => {
+  const app = createApp(App)
+
+  app.use(createPinia())
+  app.use(router)
+  app.use(VueVirtualScroller)
+
+  app.mount('#app')
+})
