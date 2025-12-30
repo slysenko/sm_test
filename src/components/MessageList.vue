@@ -41,12 +41,14 @@ async function handleLoadMoreMessages() {
 }
 
 useInfiniteScroll(
-  scrollerRef,
-  handleLoadMoreMessages,
+  () => scrollerRef.value?.$el as HTMLElement | null,
+  async () => {
+    if (isLoading.value) return;
+    await handleLoadMoreMessages();
+  },
   {
     distance: INFINITE_SCROLL_DISTANCE,
     direction: 'top',
-    canLoad: () => !isLoading.value
   }
 );
 
@@ -55,10 +57,13 @@ onMounted(() => {
 });
 
 watch(
-  () => messagesStore.messages.length,
-  (newLength, oldLength) => {
-    if (newLength > oldLength && !isLoading.value) {
-      nextTick(() => scrollToBottom());
+  () => messagesStore.messages,
+  (newMessages, oldMessages) => {
+    if (oldMessages && newMessages.length > oldMessages.length && !isLoading.value) {
+      const oldLastItem = oldMessages[oldMessages.length - 1];
+      if (newMessages[newMessages.length - 2] === oldLastItem) {
+        nextTick(() => scrollToBottom());
+      }
     }
   }
 );

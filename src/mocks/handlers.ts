@@ -1,11 +1,12 @@
 import { http, HttpResponse } from 'msw'
-import { allMockMessages, type Message } from '../utils/mockMessages'
+import { allMockMessages } from '../utils/mockMessages'
 import type {
   GetMessagesResponse,
   PostMessageRequest,
   PostMessageResponse,
   ErrorResponse,
 } from '../handlers/types'
+import type { Message } from '@/types/messages'
 
 const messageStore: Message[] = [...allMockMessages]
 let nextMessageId = Math.max(...messageStore.map((m) => m.id)) + 1
@@ -14,7 +15,6 @@ const MESSAGES_URL = 'https://example.sm.chat/api/messages'
 
 export const handlers = [
   http.get(MESSAGES_URL, ({ request }) => {
-    console.log('I am in msw get')
     const url = new URL(request.url)
     const page = parseInt(url.searchParams.get('page') || '1', 10)
     const pageSize = parseInt(url.searchParams.get('pageSize') || '20', 10)
